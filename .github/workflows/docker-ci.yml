@@ -25,17 +25,19 @@ jobs:
         sudo apt install -y docker-compose
 
     - name: Build Docker Images
-      run: docker-compose build
+      run: |
+        docker-compose build
+        docker images  # List images to verify they exist
 
     - name: Run Tests
       run: |
         docker-compose up -d
-        sleep 5  # Give services time to start
+        sleep 5
         curl -f http://localhost:3001 || exit 1
         curl -f http://localhost:3002 || exit 1
         curl -f http://localhost:3003 || exit 1
         curl -f http://localhost:3004 || exit 1
-        echo "All services are running!!!"
+        echo "All services are running!!!!"
 
     - name: Stop Containers
       run: docker-compose down
@@ -43,12 +45,16 @@ jobs:
     - name: Log in to Docker Hub
       run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-    - name: Tag and Push Docker Images to Docker Hub
+    - name: Ensure Images Exist Before Pushing
       run: |
-        docker tag upload-service ${{ secrets.DOCKER_USERNAME }}/upload-service:latest
-        docker tag streaming-service ${{ secrets.DOCKER_USERNAME }}/streaming-service:latest
-        docker tag auth-service ${{ secrets.DOCKER_USERNAME }}/auth-service:latest
-        docker tag file-system-service ${{ secrets.DOCKER_USERNAME }}/file-system-service:latest
+        docker images
+        docker tag video-streaming-sys-upload-service ${{ secrets.DOCKER_USERNAME }}/upload-service:latest
+        docker tag video-streaming-sys-streaming-service ${{ secrets.DOCKER_USERNAME }}/streaming-service:latest
+        docker tag video-streaming-sys-auth-service ${{ secrets.DOCKER_USERNAME }}/auth-service:latest
+        docker tag video-streaming-sys-file-system-service ${{ secrets.DOCKER_USERNAME }}/file-system-service:latest
+
+    - name: Push Docker Images to Docker Hub
+      run: |
         docker push ${{ secrets.DOCKER_USERNAME }}/upload-service:latest
         docker push ${{ secrets.DOCKER_USERNAME }}/streaming-service:latest
         docker push ${{ secrets.DOCKER_USERNAME }}/auth-service:latest
