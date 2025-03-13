@@ -37,7 +37,7 @@ jobs:
         curl -f http://localhost:3002 || exit 1
         curl -f http://localhost:3003 || exit 1
         curl -f http://localhost:3004 || exit 1
-        echo "All services are running!!!!"
+        echo "✅ All services are running!"
 
     - name: Stop Containers
       run: docker-compose down
@@ -48,10 +48,10 @@ jobs:
     - name: Ensure Images Exist Before Pushing
       run: |
         docker images
-        docker tag video-streaming-sys-upload-service ${{ secrets.DOCKER_USERNAME }}/upload-service:latest
-        docker tag video-streaming-sys-streaming-service ${{ secrets.DOCKER_USERNAME }}/streaming-service:latest
-        docker tag video-streaming-sys-auth-service ${{ secrets.DOCKER_USERNAME }}/auth-service:latest
-        docker tag video-streaming-sys-file-system-service ${{ secrets.DOCKER_USERNAME }}/file-system-service:latest
+        docker tag video-streaming-system_upload-service ${{ secrets.DOCKER_USERNAME }}/upload-service:latest
+        docker tag video-streaming-system_streaming-service ${{ secrets.DOCKER_USERNAME }}/streaming-service:latest
+        docker tag video-streaming-system_auth-service ${{ secrets.DOCKER_USERNAME }}/auth-service:latest
+        docker tag video-streaming-system_file-system-service ${{ secrets.DOCKER_USERNAME }}/file-system-service:latest
 
     - name: Push Docker Images to Docker Hub
       run: |
