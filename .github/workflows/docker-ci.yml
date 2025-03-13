@@ -1,0 +1,54 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main  
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set Up Docker
+      uses: docker/setup-buildx-action@v2
+
+    - name: Build Docker Images
+      run: |
+        docker-compose build
+
+    - name: Run Unit Tests
+      run: |
+        docker-compose up -d
+        sleep 10  # Wait for services to start
+        curl -f http://localhost:3001 || exit 1
+        curl -f http://localhost:3002 || exit 1
+        curl -f http://localhost:3003 || exit 1
+        curl -f http://localhost:3004 || exit 1
+        echo "All services are running!!!!!!!"
+      
+    - name: Log in to Docker Hub
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+    - name: Push Docker Images
+      run: |
+        docker tag upload-service mydockerhub/upload-service:latest
+        docker tag streaming-service mydockerhub/streaming-service:latest
+        docker tag auth-service mydockerhub/auth-service:latest
+        docker tag file-system-service mydockerhub/file-system-service:latest
+
+        docker push mydockerhub/upload-service:latest
+        docker push mydockerhub/streaming-service:latest
+        docker push mydockerhub/auth-service:latest
+        docker push mydockerhub/file-system-service:latest
+
+    - name: Deploy to Server
+      run: |
+        ssh user@your-server-ip "cd /path/to/project && git pull && docker-compose up -d"
+

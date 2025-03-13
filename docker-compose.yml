@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  upload-service:
+    build: ./UploadService
+    ports:
+      - "3001:3001"
+    depends_on:
+      - auth-service
+      - mysql
+      - file-system-service
+    networks:
+      - video_net
+
+  streaming-service:
+    build: ./StreamingService
+    ports:
+      - "3002:3002"
+    depends_on:
+      - auth-service
+      - mysql
+      - file-system-service
+    networks:
+      - video_net
+
+  auth-service:
+    build: ./AuthService
+    ports:
+      - "3003:3003"
+    networks:
+      - video_net
+
+  file-system-service:
+    build: ./FileSystemService
+    ports:
+      - "3004:3004"
+    volumes:
+      - filedata:/data/files
+    networks:
+      - video_net
+
+  mysql:
+    image: mysql:8
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: layth
+      MYSQL_DATABASE: videos_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysqldata:/var/lib/mysql
+    networks:
+      - video_net
+
+networks:
+  video_net:
+    driver: bridge
+
+volumes:
+  mysqldata:
+  filedata:
+
